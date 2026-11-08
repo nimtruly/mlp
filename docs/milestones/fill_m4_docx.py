@@ -21,6 +21,7 @@ from pathlib import Path
 
 import docx
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt
 
@@ -62,6 +63,39 @@ def add_inline(par, text, size=10):
             run.font.size = Pt(size)
 
 
+def set_borders(tbl):
+    """Thin single borders on every cell edge (the template has no 'Table Grid' style)."""
+    tbl_pr = tbl._tbl.tblPr
+    borders = OxmlElement('w:tblBorders')
+    for edge in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
+        el = OxmlElement(f'w:{edge}')
+        el.set(qn('w:val'), 'single')
+        el.set(qn('w:sz'), '4')
+        el.set(qn('w:color'), '808080')
+        borders.append(el)
+    tbl_pr.append(borders)
+
+
+def set_widths(tbl, rows, total_in):
+    """Column widths proportional to content length (nested tables otherwise collapse to zero width)."""
+    ncol = len(rows[0])
+    weight = [max(6, min(60, max(len(r[c]) for r in rows))) for c in range(ncol)]
+    widths = [Inches(total_in * w / sum(weight)) for w in weight]
+    tbl.autofit = False
+    tbl_pr = tbl._tbl.tblPr
+    tbl_w = tbl_pr.find(qn('w:tblW'))
+    if tbl_w is None:
+        tbl_w = OxmlElement('w:tblW')
+        tbl_pr.append(tbl_w)
+    tbl_w.set(qn('w:w'), str(int(Inches(total_in).twips)))
+    tbl_w.set(qn('w:type'), 'dxa')
+    for grid_col, w in zip(tbl._tbl.tblGrid.findall(qn('w:gridCol')), widths):
+        grid_col.set(qn('w:w'), str(int(w.twips)))
+    for row in tbl.rows:
+        for cell, w in zip(row.cells, widths):
+            cell.width = w
+
+
 def fill_answer(cell, text):
     first = clear_cell(cell)
     lines = text.splitlines()
@@ -86,7 +120,8 @@ def fill_answer(cell, text):
             if not used_first:                        # a cell must start with a paragraph
                 used_first = True
             tbl = cell.add_table(rows=len(rows), cols=len(rows[0]))
-            tbl.style = 'Table Grid'
+            set_borders(tbl)
+            set_widths(tbl, rows, total_in=6.2)
             for r, row in enumerate(rows):
                 for c, val in enumerate(row):
                     p = tbl.cell(r, c).paragraphs[0]
