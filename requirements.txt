@@ -1,0 +1,17 @@
+# Only libraries permitted by the MLP project guidelines
+numpy
+pandas
+matplotlib
+seaborn
+plotly
+scikit-learn
+xgboost
+lightgbm
+catboost
+imbalanced-learn
+scipy
+statsmodels
+regex
+wordcloud
+# local-only helper for downloading the data (not used in the Kaggle notebook)
+kaggle

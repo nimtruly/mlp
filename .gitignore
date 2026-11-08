@@ -1,0 +1,14 @@
+# Competition data (too large for git) — see data/README.md
+data/*.csv
+!data/sample_submission.csv
+data/*.zip
+
+# Kaggle credentials
+kaggle.json
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
