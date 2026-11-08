@@ -1,0 +1,7 @@
+model,search,configs,cv,best_cv_macro_f1,best_params
+Logistic Regression,GridSearchCV,10,"StratifiedKFold(3), 30k",0.6428821092689134,"{'C': 10, 'class_weight': 'balanced'}"
+KNN,GridSearchCV,10,"StratifiedKFold(3), 15k",0.5408502540074166,"{'n_neighbors': 21, 'weights': 'distance'}"
+Decision Tree,GridSearchCV,48,"StratifiedKFold(3), 30k",0.5920630038044262,"{'criterion': 'gini', 'max_depth': 10, 'min_samples_leaf': 10}"
+Random Forest,RandomizedSearchCV,6,"StratifiedKFold(3), 30k",0.6590709672753923,"{'n_estimators': 200, 'min_samples_leaf': 1, 'max_features': 0.35, 'max_depth': None, 'class_weight': 'balanced_subsample'}"
+LightGBM,RandomizedSearchCV + early stopping,8,"StratifiedKFold(3), 30k",0.6750655872388528,"{'subsample': 0.85, 'reg_lambda': 0, 'num_leaves': 63, 'n_estimators': 400, 'min_child_samples': 10, 'learning_rate': 0.1, 'colsample_bytree': 0.5, 'lr_final': 0.05, 'n_estimators_final': 2078}"
+XGBoost,RandomizedSearchCV,4,"StratifiedKFold(3), 30k",0.6753292773457789,"{'subsample': 0.8, 'n_estimators': 600, 'min_child_weight': 5, 'max_depth': 10, 'learning_rate': 0.1, 'colsample_bytree': 0.7}"

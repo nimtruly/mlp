@@ -1,0 +1,41 @@
+{
+  "Logistic Regression": {
+    "C": 10,
+    "class_weight": "balanced"
+  },
+  "KNN": {
+    "n_neighbors": 21,
+    "weights": "distance"
+  },
+  "Decision Tree": {
+    "criterion": "gini",
+    "max_depth": 10,
+    "min_samples_leaf": 10
+  },
+  "Random Forest": {
+    "n_estimators": 200,
+    "min_samples_leaf": 1,
+    "max_features": 0.35,
+    "max_depth": null,
+    "class_weight": "balanced_subsample"
+  },
+  "LightGBM": {
+    "subsample": 0.85,
+    "reg_lambda": 0,
+    "num_leaves": 63,
+    "n_estimators": 400,
+    "min_child_samples": 10,
+    "learning_rate": 0.1,
+    "colsample_bytree": 0.5,
+    "lr_final": 0.05,
+    "n_estimators_final": 2078
+  },
+  "XGBoost": {
+    "subsample": 0.8,
+    "n_estimators": 600,
+    "min_child_weight": 5,
+    "max_depth": 10,
+    "learning_rate": 0.1,
+    "colsample_bytree": 0.7
+  }
+}

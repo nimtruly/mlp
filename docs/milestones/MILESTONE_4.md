@@ -8,7 +8,7 @@
   ~100–400 words, code pasted as text, figures at the end as `Figure Q<n>.<k>`.
 - Cover **at least 50 % of the feature columns** across the milestone's answers.
 
-Status: **answers drafted** in [MILESTONE_4_ANSWERS.md](MILESTONE_4_ANSWERS.md) → [Milestone_4_filled.docx](Milestone_4_filled.docx); tuned-score cells marked [fill after running] wait for the notebook run.
+Status: **complete**. Answers with real notebook results in [MILESTONE_4_ANSWERS.md](MILESTONE_4_ANSWERS.md) → [Milestone_4_filled.docx](Milestone_4_filled.docx) / [.pdf](Milestone_4_filled.pdf). Best model: stacking, hold-out macro-F1 0.7456.
 (see [../COMPETITION.md](../COMPETITION.md)).
 
 ---

@@ -1,0 +1,4 @@
+method,configs_tried,best_cv_macro_f1,seconds,best_params
+GridSearchCV,48,0.5920630038044262,33.3,"{'decisiontreeclassifier__criterion': 'gini', 'decisiontreeclassifier__max_depth': 10, 'decisiontreeclassifier__min_samples_leaf': 10}"
+RandomizedSearchCV (n_iter=12),12,0.5920191009510081,8.4,"{'decisiontreeclassifier__min_samples_leaf': 1, 'decisiontreeclassifier__max_depth': 10, 'decisiontreeclassifier__criterion': 'gini'}"
+HalvingRandomSearchCV (factor=3),48,0.571059350430937,8.6,"{'decisiontreeclassifier__min_samples_leaf': 50, 'decisiontreeclassifier__max_depth': 10, 'decisiontreeclassifier__criterion': 'gini'}"
