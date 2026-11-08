@@ -3,8 +3,8 @@
 | File | Committed? | How to get it |
 |---|---|---|
 | `sample_submission.csv` | yes | already here |
-| `train.csv` | no (git-ignored, > 30 MB) | download — see below |
-| `test.csv` | no (git-ignored, > 30 MB) | download — see below |
+| `train.csv` | no (git-ignored, 195 MB) | download — see below |
+| `test.csv` | no (git-ignored, 80 MB) | download — see below |
 
 ## Option A — Kaggle API (recommended)
 
@@ -19,7 +19,16 @@
    python scripts/download_data.py
    ```
 
-## Option B — manual
+## Option B — team Google Drive copy
+
+```bash
+curl -L -o data/train.csv "https://drive.usercontent.google.com/download?id=1PqndfpIbaVWqLKrxGWBtrUP6MuoenkVy&export=download&confirm=t"
+curl -L -o data/test.csv  "https://drive.usercontent.google.com/download?id=14GPVoRqN7JVzbffqPUH3FayfND_5BHXn&export=download&confirm=t"
+```
+
+Expected sizes: `train.csv` 194,962,516 bytes, `test.csv` 79,849,746 bytes.
+
+## Option C — manual
 
 Download the zip from the competition's **Data** tab
 (https://www.kaggle.com/competitions/workstation-rental-price-tier-prediction/data),

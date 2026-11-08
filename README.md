@@ -8,12 +8,12 @@ IIT Madras BS — Machine Learning Practice (MLP) project, term **2026 T3**.
 
 ## The problem in one paragraph
 
-Predict the **`price_tier`** (an integer class label) of a workstation rental from its
-features. It is a **multi-class classification** problem: each row of `test.csv` gets
-one tier, and the submission is a two-column CSV `ID,price_tier`. The test set has
-**114,538 rows** (IDs `0`–`114537`). A leaderboard score **above 0.70** is required to
-be eligible for the viva. See [docs/COMPETITION.md](docs/COMPETITION.md) for what we know
-about the data and what still has to be confirmed once `train.csv` is loaded.
+Predict the **`price_tier`** (1–4, cheapest to most expensive) of a workstation rental
+space from 59 features about its operator, location, capacity, booking terms, availability,
+reviews and facilities. It is a **4-class classification** problem with fairly balanced
+classes: 279,746 training rows, 114,538 test rows, submitted as `ID,price_tier`. A leaderboard
+score **above 0.70** is required for the viva. See [docs/COMPETITION.md](docs/COMPETITION.md)
+for the full data dictionary and first observations.
 
 ## Repository layout
 
@@ -24,8 +24,8 @@ about the data and what still has to be confirmed once `train.csv` is loaded.
 ├── data/
 │   ├── README.md                 ← how to get train.csv / test.csv
 │   ├── sample_submission.csv     ← from Kaggle (committed, ~0.9 MB)
-│   ├── train.csv                 ← NOT committed (>30 MB) — download it
-│   └── test.csv                  ← NOT committed (>30 MB) — download it
+│   ├── train.csv                 ← NOT committed (195 MB) — download it
+│   └── test.csv                  ← NOT committed (80 MB) — download it
 ├── scripts/
 │   └── download_data.py          ← pulls the competition files with the Kaggle API
 ├── notebooks/                    ← project notebooks go here

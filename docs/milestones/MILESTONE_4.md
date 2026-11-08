@@ -8,7 +8,7 @@
   ~100–400 words, code pasted as text, figures at the end as `Figure Q<n>.<k>`.
 - Cover **at least 50 % of the feature columns** across the milestone's answers.
 
-Status: **not started** — waiting for `train.csv`/`test.csv` and the evaluation metric
+Status: **not started** — data is downloaded; still need the evaluation metric
 (see [../COMPETITION.md](../COMPETITION.md)).
 
 ---
