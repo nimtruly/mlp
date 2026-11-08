@@ -403,14 +403,14 @@ print('tree preprocessor output columns  :', tree_demo.transform(X_full.head(5))
 #
 # * **Hold-out**: a stratified 80/20 split of `train.csv`. Every model is compared on the same 55,950
 #   held-out rows using macro-F1.
-# * **Tuning**: `StratifiedKFold(3)` on a 60,000-row stratified sample of the training part. This keeps
+# * **Tuning**: `StratifiedKFold(3)` on a 30,000-row stratified sample of the training part. This keeps
 #   searches affordable on a 4-core CPU, and the tuned configurations are then refitted on the full
 #   training part and scored on the hold-out.
 
 # %%
 X_tr, X_val, y_tr, y_val = train_test_split(X_full, y_full, test_size=0.2, stratify=y_full,
                                             random_state=SEED)
-X_tune, _, y_tune, _ = train_test_split(X_tr, y_tr, train_size=60000, stratify=y_tr, random_state=SEED)
+X_tune, _, y_tune, _ = train_test_split(X_tr, y_tr, train_size=30000, stratify=y_tr, random_state=SEED)
 CV3 = StratifiedKFold(n_splits=3, shuffle=True, random_state=SEED)
 print('train', X_tr.shape, '| hold-out', X_val.shape, '| tuning sample', X_tune.shape)
 
@@ -636,7 +636,7 @@ print(coef['tier 1'].sort_values(ascending=False).head(8).round(3))
 knn_pipe = make_pipeline(make_linear_preprocessor(), KNeighborsClassifier(algorithm='brute', n_jobs=1))
 knn_grid = {'kneighborsclassifier__n_neighbors': [5, 11, 21, 41, 81],
             'kneighborsclassifier__weights': ['uniform', 'distance']}
-X_knn_tune, y_knn_tune = X_tune.iloc[:30000], y_tune.iloc[:30000]
+X_knn_tune, y_knn_tune = X_tune.iloc[:15000], y_tune.iloc[:15000]
 t = time.time()
 knn_search = GridSearchCV(knn_pipe, knn_grid, scoring=SCORING, cv=CV3, n_jobs=N_JOBS, refit=False)
 knn_search.fit(X_knn_tune, y_knn_tune)
@@ -649,7 +649,7 @@ for w, g in knn_cv.groupby('param_kneighborsclassifier__weights'):
     plt.plot(g['param_kneighborsclassifier__n_neighbors'].astype(int), g['mean_test_score'], marker='o',
              label=f'weights={w}')
 plt.xlabel('n_neighbors (k)')
-plt.ylabel('CV macro-F1 (3-fold, 30k rows)')
+plt.ylabel('CV macro-F1 (3-fold, 15k rows)')
 plt.title('KNN: effect of k and neighbour weighting (Euclidean)')
 plt.legend(fontsize=8)
 savefig('Q3.1_knn_k_validation_curve')
@@ -657,7 +657,7 @@ savefig('Q3.1_knn_k_validation_curve')
 # %%
 # Effect of training-set size on KNN (more neighbours to choose from vs prediction cost)
 size_rows = []
-for n in [10000, 25000, 50000, 100000]:
+for n in [10000, 25000, 50000]:
     idx = X_tr.sample(n, random_state=SEED).index
     m = clone(knn_pipe).set_params(**knn_search.best_params_, kneighborsclassifier__n_jobs=N_JOBS).fit(X_tr.loc[idx], y_tr.loc[idx])
     t = time.time()
@@ -732,13 +732,13 @@ savefig('Q4.2_decision_tree_top_levels')
 
 # %%
 rf_pipe = make_pipeline(make_tree_preprocessor(), RandomForestClassifier(n_jobs=1, random_state=SEED))
-rf_space = {'randomforestclassifier__n_estimators': [150, 300],
+rf_space = {'randomforestclassifier__n_estimators': [100, 200],
             'randomforestclassifier__max_features': ['sqrt', 0.2, 0.35],
             'randomforestclassifier__max_depth': [None, 20, 30],
             'randomforestclassifier__min_samples_leaf': [1, 2, 5],
             'randomforestclassifier__class_weight': [None, 'balanced_subsample']}
 t = time.time()
-rf_search = RandomizedSearchCV(rf_pipe, rf_space, n_iter=12, scoring=SCORING, cv=CV3, n_jobs=N_JOBS,
+rf_search = RandomizedSearchCV(rf_pipe, rf_space, n_iter=6, scoring=SCORING, cv=CV3, n_jobs=N_JOBS,
                                random_state=SEED, refit=False)
 rf_search.fit(X_tune, y_tune)
 print(f'random search: {time.time() - t:.0f}s | best {rf_search.best_params_} CV={rf_search.best_score_:.4f}')
@@ -751,7 +751,7 @@ best_rf_params = {k.split('__')[1]: v for k, v in rf_search.best_params_.items()
 pre = make_tree_preprocessor().fit(X_tune, y_tune)
 Xt = pre.transform(X_tune)
 rf_curve = []
-for n in [10, 25, 50, 100, 200, 300]:
+for n in [10, 25, 50, 100, 200]:
     p_ = dict(best_rf_params, n_estimators=n)
     rf_ = RandomForestClassifier(**p_, oob_score=True, n_jobs=N_JOBS, random_state=SEED).fit(Xt, y_tune)
     oob_pred = rf_.classes_[rf_.oob_decision_function_.argmax(1)]
@@ -760,7 +760,7 @@ rf_curve = pd.DataFrame(rf_curve)
 plt.figure(figsize=(6, 4))
 plt.plot(rf_curve['n_estimators'], rf_curve['oob_macro_f1'], marker='o')
 plt.xlabel('n_estimators')
-plt.ylabel('OOB macro-F1 (60k sample)')
+plt.ylabel('OOB macro-F1 (30k sample)')
 plt.title('Random forest: more trees -> lower variance, diminishing returns')
 savefig('Q5.1_random_forest_n_estimators_oob')
 print(rf_curve.round(4).to_string(index=False))
@@ -789,7 +789,7 @@ savefig('Q5.2_random_forest_feature_importance')
 # %%
 lgb_pipe = make_pipeline(make_tree_preprocessor(impute=False),
                          lgb.LGBMClassifier(random_state=SEED, n_jobs=1, verbose=-1, subsample_freq=1))
-lgb_space = {'lgbmclassifier__n_estimators': [200, 400, 700],
+lgb_space = {'lgbmclassifier__n_estimators': [200, 400],
              'lgbmclassifier__learning_rate': [0.03, 0.06, 0.1],
              'lgbmclassifier__num_leaves': [31, 63, 127, 255],
              'lgbmclassifier__min_child_samples': [10, 30, 80],
@@ -797,7 +797,7 @@ lgb_space = {'lgbmclassifier__n_estimators': [200, 400, 700],
              'lgbmclassifier__colsample_bytree': [0.3, 0.5, 0.8],
              'lgbmclassifier__reg_lambda': [0, 1, 5]}
 t = time.time()
-lgb_search = RandomizedSearchCV(lgb_pipe, lgb_space, n_iter=16, scoring=SCORING, cv=CV3, n_jobs=N_JOBS,
+lgb_search = RandomizedSearchCV(lgb_pipe, lgb_space, n_iter=8, scoring=SCORING, cv=CV3, n_jobs=N_JOBS,
                                 random_state=SEED, refit=False)
 lgb_search.fit(X_tune, y_tune)
 print(f'random search: {time.time() - t:.0f}s | best {lgb_search.best_params_} CV={lgb_search.best_score_:.4f}')
@@ -858,7 +858,7 @@ xgb_space = {'encodelabels__estimator__n_estimators': [300, 600],
              'encodelabels__estimator__subsample': [0.8, 1.0],
              'encodelabels__estimator__colsample_bytree': [0.4, 0.7]}
 t = time.time()
-xgb_search = RandomizedSearchCV(xgb_pipe, xgb_space, n_iter=8, scoring=SCORING, cv=CV3, n_jobs=N_JOBS,
+xgb_search = RandomizedSearchCV(xgb_pipe, xgb_space, n_iter=4, scoring=SCORING, cv=CV3, n_jobs=N_JOBS,
                                 random_state=SEED, refit=False)
 xgb_search.fit(X_tune, y_tune)
 print(f'random search: {time.time() - t:.0f}s | best {xgb_search.best_params_} CV={xgb_search.best_score_:.4f}')
@@ -898,7 +898,7 @@ _ = vote.set_params(voting="soft", weights=None)  # restore default settings
 stack = StackingClassifier(
     estimators=[('lr', clone(best_lr)), ('rf', clone(best_rf)), ('lgb', clone(lgb_es))],
     final_estimator=LogisticRegression(max_iter=2000, C=1.0),
-    cv=StratifiedKFold(3, shuffle=True, random_state=SEED), stack_method='predict_proba', n_jobs=1)
+    cv=StratifiedKFold(2, shuffle=True, random_state=SEED), stack_method='predict_proba', n_jobs=1)
 stack = evaluate('Stacking (LR meta)', stack, 'ensemble', family='ensemble')
 meta_coef = pd.DataFrame(stack.final_estimator_.coef_, index=[f'tier {c}' for c in stack.classes_],
                          columns=[f'{n}:p{c}' for n, _ in stack.estimators for c in LABELS])
@@ -921,7 +921,7 @@ savefig('Q7.1_voting_stacking_comparison')
 # %% [markdown]
 # ## 10. Hyperparameter-tuning strategy (Q8)
 #
-# **Cross-validation strategies compared.** Using the tuned logistic regression on the 60k sample:
+# **Cross-validation strategies compared.** Using the tuned logistic regression on the 30k sample:
 # a single hold-out split vs stratified k-fold with k = 3, 5 and 10. The question is how stable the
 # estimate is and what it costs.
 
@@ -988,17 +988,17 @@ savefig('Q8.1_cv_and_search_strategies')
 
 # %%
 tuning_summary = pd.DataFrame([
-    {'model': 'Logistic Regression', 'search': 'GridSearchCV', 'configs': len(lr_cv), 'cv': 'StratifiedKFold(3), 60k',
+    {'model': 'Logistic Regression', 'search': 'GridSearchCV', 'configs': len(lr_cv), 'cv': 'StratifiedKFold(3), 30k',
      'best_cv_macro_f1': lr_search.best_score_, 'best_params': lr_search.best_params_},
-    {'model': 'KNN', 'search': 'GridSearchCV', 'configs': len(knn_cv), 'cv': 'StratifiedKFold(3), 30k',
+    {'model': 'KNN', 'search': 'GridSearchCV', 'configs': len(knn_cv), 'cv': 'StratifiedKFold(3), 15k',
      'best_cv_macro_f1': knn_search.best_score_, 'best_params': knn_search.best_params_},
-    {'model': 'Decision Tree', 'search': 'GridSearchCV', 'configs': len(dt_cv), 'cv': 'StratifiedKFold(3), 60k',
+    {'model': 'Decision Tree', 'search': 'GridSearchCV', 'configs': len(dt_cv), 'cv': 'StratifiedKFold(3), 30k',
      'best_cv_macro_f1': dt_search.best_score_, 'best_params': dt_search.best_params_},
-    {'model': 'Random Forest', 'search': 'RandomizedSearchCV', 'configs': len(rf_cv), 'cv': 'StratifiedKFold(3), 60k',
+    {'model': 'Random Forest', 'search': 'RandomizedSearchCV', 'configs': len(rf_cv), 'cv': 'StratifiedKFold(3), 30k',
      'best_cv_macro_f1': rf_search.best_score_, 'best_params': rf_search.best_params_},
-    {'model': 'LightGBM', 'search': 'RandomizedSearchCV + early stopping', 'configs': len(lgb_cv), 'cv': 'StratifiedKFold(3), 60k',
+    {'model': 'LightGBM', 'search': 'RandomizedSearchCV + early stopping', 'configs': len(lgb_cv), 'cv': 'StratifiedKFold(3), 30k',
      'best_cv_macro_f1': lgb_search.best_score_, 'best_params': dict(lgb_search.best_params_, lr_final=BEST_LR_LGB, n_estimators_final=BEST_ITER_LGB)},
-    {'model': 'XGBoost', 'search': 'RandomizedSearchCV', 'configs': len(xgb_search.cv_results_['params']), 'cv': 'StratifiedKFold(3), 60k',
+    {'model': 'XGBoost', 'search': 'RandomizedSearchCV', 'configs': len(xgb_search.cv_results_['params']), 'cv': 'StratifiedKFold(3), 30k',
      'best_cv_macro_f1': xgb_search.best_score_, 'best_params': xgb_search.best_params_},
 ])
 tuning_summary['best_params'] = tuning_summary['best_params'].map(
