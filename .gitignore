@@ -12,3 +12,6 @@ __pycache__/
 .ipynb_checkpoints/
 .venv/
 venv/
+
+# notebook run log
+notebooks/run.log
