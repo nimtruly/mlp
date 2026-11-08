@@ -23,7 +23,7 @@ import docx
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Inches, Pt
+from docx.shared import Inches, Pt, RGBColor
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
@@ -183,13 +183,33 @@ def fill_figures(doc, qs):
             anchor = img._p
 
 
+def add_banner(doc, text):
+    """Red warning on the first page and in every page header."""
+    first = doc.paragraphs[0]
+    p = first.insert_paragraph_before()
+    run = p.add_run(text)
+    run.bold = True
+    run.font.size = Pt(12)
+    run.font.color.rgb = RGBColor(0xC0, 0x00, 0x00)
+    for section in doc.sections:
+        hp = section.header.paragraphs[0] if section.header.paragraphs else section.header.add_paragraph()
+        hr = hp.add_run(text)
+        hr.bold = True
+        hr.font.size = Pt(9)
+        hr.font.color.rgb = RGBColor(0xC0, 0x00, 0x00)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--roll', default='')
     ap.add_argument('--out', default=str(OUT))
+    ap.add_argument('--answers', default=str(ANSWERS))
+    ap.add_argument('--banner', default='', help='warning text shown on page 1 and in every page header')
     args = ap.parse_args()
-    qs = parse_answers(ANSWERS.read_text())
+    qs = parse_answers(Path(args.answers).read_text())
     doc = docx.Document(str(TEMPLATE))
+    if args.banner:
+        add_banner(doc, args.banner)
     if args.roll:
         doc.tables[0].cell(0, 1).paragraphs[0].add_run(args.roll)
     for num in range(1, 11):
